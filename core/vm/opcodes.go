@@ -290,6 +290,7 @@ var opCodeToString = [256]string{
 	BASEFEE:     "BASEFEE",
 	BLOBHASH:    "BLOBHASH",
 	BLOBBASEFEE: "BLOBBASEFEE",
+	FETCHURL:    "FETCHURL",
 
 	// 0x50 range - 'storage' and execution.
 	POP:      "POP",

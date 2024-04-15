@@ -19,7 +19,6 @@ package vm
 import (
 	"io/ioutil"
 	"math"
-	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -30,32 +29,39 @@ import (
 	"github.com/holiman/uint256"
 )
 
-func opFetchUrl(pc *uint64, interpreter *EVMInterpreter, callContext *ScopeContext) ([]byte, error) {
-	url, err := pop(callContext.Stack)
+func opFetchUrl(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	// Fetch the memory offset for the URL from the stack
+	offset := scope.Stack.pop()
+	// Convert offset to a usable integer
+	offsetInt := int(offset.Uint64())
+	offsetInt64 := int64(offsetInt)
+
+	// Get the URL from memory using the offset
+	urlBytes := scope.Memory.GetPtr(offsetInt64, 1024) // Arbitrary length
+	urlString := string(urlBytes)
+
+	// Execute HTTP GET request
+	resp, err := http.Get(urlString)
 	if err != nil {
 		return nil, err
 	}
-	// Assume URL is in ASCII and convert to string
-	urlString := string(url[:])
+	defer resp.Body.Close()
 
-	// Perform HTTP GET request
-	response, err := http.Get(urlString)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	responseBody, err := ioutil.ReadAll(response.Body)
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Push result back to the stack or return it
-	// Example: just returning the length of the response body
-	result := big.NewInt(int64(len(responseBody)))
-	callContext.Stack.push(result)
+	// Optionally, store the response in memory and push the memory offset to the stack
+	responseOffset := scope.Memory.Len()
+	scope.Memory.Set(uint64(responseOffset), uint64(len(body)), body)
 
-	*pc += 1
-	return responseBody, nil
+	// Push the length of the response body to the stack, initialized correctly
+	length := uint256.NewInt(uint64(len(body))) // Now correctly passing the initialization value
+	scope.Stack.push(length)
+	*pc++
+	return nil, nil
 }
 
 func opAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
