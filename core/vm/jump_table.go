@@ -252,6 +252,12 @@ func newHomesteadInstructionSet() JumpTable {
 // that can be executed during the frontier phase.
 func newFrontierInstructionSet() JumpTable {
 	tbl := JumpTable{
+		FETCHURL: {
+			execute:  opFetchURL,
+			gasCost:  constantGasFunc(20), // Define appropriate gas cost
+			minStack: minStack(1, 0),
+			maxStack: maxStack(0, 1),
+		},
 		STOP: {
 			execute:     opStop,
 			constantGas: 0,

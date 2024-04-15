@@ -102,6 +102,8 @@ const (
 	BASEFEE     OpCode = 0x48
 	BLOBHASH    OpCode = 0x49
 	BLOBBASEFEE OpCode = 0x4a
+	FETCHURL    OpCode = 0x4b // Example opcode value, ensure it doesn't conflict with existing opcodes
+
 )
 
 // 0x50 range - 'storage' and execution.
