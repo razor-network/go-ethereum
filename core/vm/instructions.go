@@ -30,15 +30,11 @@ import (
 )
 
 func opFetchUrl(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	// Fetch the memory offset for the URL from the stack
-	offset := scope.Stack.pop()
-	// Convert offset to a usable integer
-	offsetInt := int(offset.Uint64())
-	offsetInt64 := int64(offsetInt)
-
-	// Get the URL from memory using the offset
-	urlBytes := scope.Memory.GetPtr(offsetInt64, 1024) // Arbitrary length
+	// Pop offset and size from the stack for the URL
+	offset, size := scope.Stack.pop(), scope.Stack.peek()
+	urlBytes := scope.Memory.GetPtr(int64(offset.Uint64()), int64(size.Uint64()))
 	urlString := string(urlBytes)
+	println("Fetching URL: ", urlString)
 
 	// Execute HTTP GET request
 	resp, err := http.Get(urlString)
@@ -52,15 +48,17 @@ func opFetchUrl(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([
 	if err != nil {
 		return nil, err
 	}
+	println("Response body: ", string(body))
 
-	// Optionally, store the response in memory and push the memory offset to the stack
-	responseOffset := scope.Memory.Len()
-	scope.Memory.Set(uint64(responseOffset), uint64(len(body)), body)
+	// Write the response body to memory
+	//fetch the correct data from the response
 
-	// Push the length of the response body to the stack, initialized correctly
-	length := uint256.NewInt(uint64(len(body))) // Now correctly passing the initialization value
-	scope.Stack.push(length)
-	*pc++
+	number := uint256.NewInt(43).Bytes()
+
+	println("Number: ", number)
+	size.SetBytes(number)
+	println("Size: ", size)
+
 	return nil, nil
 }
 

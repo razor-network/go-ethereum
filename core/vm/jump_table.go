@@ -254,9 +254,10 @@ func newFrontierInstructionSet() JumpTable {
 	tbl := JumpTable{
 		FETCHURL: {
 			execute:     opFetchUrl,
-			constantGas: GasQuickStep,
-			minStack:    minStack(1, 0),
-			maxStack:    maxStack(0, 1),
+			constantGas: params.Keccak256Gas,
+			minStack:    minStack(2, 1),
+			maxStack:    maxStack(2, 1),
+			// memorySize:  memoryKeccak256,
 		},
 		STOP: {
 			execute:     opStop,

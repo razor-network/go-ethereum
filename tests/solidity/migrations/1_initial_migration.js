@@ -14,8 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
+const Web3 = require('web3');
+
 const Migrations = artifacts.require("Migrations");
 
 module.exports = function(deployer) {
+  const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+  web3.eth.personal.unlockAccount(config.from, "", 36000);
   deployer.deploy(Migrations);
 };
